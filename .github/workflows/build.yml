@@ -14,6 +14,10 @@ on:
         default: true
         type: boolean
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build-riscv64:
     if: ${{ inputs.build_riscv == true }}
@@ -34,7 +38,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: images
-          fetch-depth: 0
 
       - name: Checkout mkimage
         uses: actions/checkout@v4
@@ -45,12 +48,9 @@ jobs:
       - name: Install dependencies
         run: |
           init-docker
-          for i in {1..3}; do
-            sudo pacman -Sy --noconfirm --needed \
+          sudo pacman -Sy --noconfirm --needed \
             python python-prettytable parted btrfs-progs dosfstools \
-            git wget arch-install-scripts unzip gptfdisk xz jq which multipath-tools docker openssh && break
-            sleep 5
-          done
+            git wget arch-install-scripts unzip gptfdisk xz jq which multipath-tools docker openssh
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -63,14 +63,13 @@ jobs:
             sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci && break
           done
 
-      - name: Send image to release job
-        run: |
-          echo "$SSH_KEY" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          /usr/bin/scp -i /tmp/deploy_key -o StrictHostKeyChecking=no out/*.img.xz "$RELEASE_VM:/images/"
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          RELEASE_VM: ${{ secrets.RELEASE_VM }}
+      - name: Upload built image
+        uses: actions/upload-artifact@v4
+        with:
+          name: riscv64-${{ matrix.image }}
+          path: out/*.img.xz
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Cleanup
         if: always()
@@ -85,30 +84,18 @@ jobs:
       image: berylliumorg/os:latest
       ports:
         - 80
-      options:  --privileged --cap-add=MKNOD --device=/dev/loop-control:/dev/loop-control --device=/dev/loop0:/dev/loop0 --cap-add SYS_ADMIN
+      options: --privileged --cap-add=MKNOD --device=/dev/loop-control:/dev/loop-control --device=/dev/loop0:/dev/loop0 --cap-add SYS_ADMIN
 
     strategy:
       fail-fast: false
       matrix:
-        image: [nova-image, nx5-image, opi5-image, opi5plus-image, r58s-image, r58x-4g-image, r58x-image, r58x-pro-image, rock4c-plus-image, rock5a-image, rock5b-image, rock5bp-image, rock5c-image, rock5d-image, rock5t-image, rock5itx-image, cpi4-image, edge2-cinnamon-image, fydetabduo-image, vim4-gnome-image, dtv-cm5-image, radxa-cm5-image, opi5-max-image, opi5-pro-image, opi5-ultra-image, opi-cm5-image, itx-3588j-image, opi-zero3-image, opi-zero2w-image,
-                nova-image-mainline, opi5-image-mainline, opi5plus-image-mainline, opi5-max-image-mainline, opi5-ultra-image-mainline, rock5a-image-mainline, rock5b-image-mainline, rock5bp-image-mainline, rock5itx-image-mainline]
+        image: [nova-image, nova-mainline-image, nx5-image, opi5-image, opi5plus-image, r58s-image, r58x-4g-image, r58x-image, r58x-pro-image, rock4c-plus-image, rock5a-image, rock5b-image, rock5bp-image, rock5c-image, rock5d-image, rock5t-image, rock5itx-image, cpi4-image, edge2-cinnamon-image, fydetabduo-image, vim4-gnome-image, dtv-cm5-image, radxa-cm5-image, opi5-max-image, opi5-pro-image, opi5-ultra-image, opi-cm5-image, itx-3588j-image, opi-zero3-image, opi-zero2w-image]
 
     steps:
-      - name: Install dependencies
-        run: |
-          init-docker
-          for i in {1..3}; do
-            sudo pacman -Sy --noconfirm --needed \
-            python python-prettytable parted btrfs-progs dosfstools \
-            git wget arch-install-scripts unzip gptfdisk xz jq edk2-rk3588-devel which multipath-tools openssh && break
-            sleep 5
-          done
-
       - name: Checkout Images
         uses: actions/checkout@v4
         with:
           path: images
-          fetch-depth: 0
 
       - name: Checkout mkimage
         uses: actions/checkout@v4
@@ -116,35 +103,28 @@ jobs:
           repository: beryllium-org/mkimage
           path: mkimage
 
-      - name: Change repo mainline
+      - name: Install dependencies
         run: |
-          if [[ "${{ matrix.image }}" == *"mainline"* ]]; then
-            cd images
-            git checkout mainline
-          fi
+          init-docker
+          sudo pacman -Sy --noconfirm --needed \
+            python python-prettytable parted btrfs-progs dosfstools \
+            git wget arch-install-scripts unzip gptfdisk xz jq edk2-rk3588-devel which multipath-tools openssh
 
       - name: Build Image
         run: |
           sudo umount -R ./work/aarch64/* || true
           sudo rm -rf /var/lib/pacman/db.lck ./out ./work
           for i in {1..3}; do
-              if [[ "${{ matrix.image }}" == *"mainline"* ]]; then
-                img="${{ matrix.image }}"
-                img="${img//-mainline/}"
-              else
-                img=${{ matrix.image }}
-              fi
-            sudo python mkimage/mkimage.py -c images/${img} -w ./work -o ./out --ci && break
+            sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci && break
           done
 
-      - name: Send image to release job
-        run: |
-          echo "$SSH_KEY" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          /usr/bin/scp -i /tmp/deploy_key -o StrictHostKeyChecking=no out/*.img.xz "$RELEASE_VM:/images/"
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          RELEASE_VM: ${{ secrets.RELEASE_VM }}
+      - name: Upload built image
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm64-${{ matrix.image }}
+          path: out/*.img.xz
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Cleanup
         if: always()
@@ -153,7 +133,7 @@ jobs:
           sudo rm -rf ./work ./out
 
   release:
-    if: always()
+    if: ${{ needs.build-arm.result == 'success' || needs.build-riscv64.result == 'success' }}
     needs: [build-arm, build-riscv64]
     runs-on: [self-hosted, ARM64, Beryllium, emag]
 
@@ -162,38 +142,88 @@ jobs:
         id: set_tag_name
         run: echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Create Release and Upload Each Image Individually
+      - name: Download ARM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: arm64-*
+          path: ./artifacts/arm64
+          merge-multiple: true
+
+      - name: Download RISC-V artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: riscv64-*
+          path: ./artifacts/riscv64
+          merge-multiple: true
+
+      - name: Create or update release and upload images
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           TAG_NAME: ${{ env.TAG_NAME }}
         run: |
-          # Create a draft release
-          RELEASE_RESPONSE=$(curl -s -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"tag_name\": \"$TAG_NAME\", \"name\": \"$TAG_NAME\", \"draft\": true, \"prerelease\": true}" \
-            "https://api.github.com/repos/$REPO/releases")
+          set -euo pipefail
 
-          RELEASE_ID=$(echo $RELEASE_RESPONSE | jq -r '.id')
+          API="https://api.github.com/repos/$REPO"
 
-          if [ "$RELEASE_ID" == "null" ]; then
-            echo "Failed to create a release. Response: $RELEASE_RESPONSE"
+          RELEASE_RESPONSE=$(curl -sSf \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$API/releases/tags/$TAG_NAME" || true)
+
+          RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id // empty')
+          UPLOAD_URL=$(echo "$RELEASE_RESPONSE" | jq -r '.upload_url // empty' | sed 's/{?name,label}//')
+
+          if [ -z "$RELEASE_ID" ]; then
+            CREATE_RESPONSE=$(curl -sSf -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Content-Type: application/json" \
+              -d "{\"tag_name\":\"$TAG_NAME\",\"name\":\"$TAG_NAME\",\"draft\":true,\"prerelease\":true}" \
+              "$API/releases")
+
+            RELEASE_ID=$(echo "$CREATE_RESPONSE" | jq -r '.id')
+            UPLOAD_URL=$(echo "$CREATE_RESPONSE" | jq -r '.upload_url' | sed 's/{?name,label}//')
+          fi
+
+          if [ -z "$RELEASE_ID" ] || [ -z "$UPLOAD_URL" ]; then
+            echo "Failed to obtain release information."
             exit 1
           fi
 
-          # Upload each image file to the release
-          for img in /images/*.img.xz; do
+          mapfile -t IMAGES < <(find ./artifacts -type f -name '*.img.xz' | sort)
+
+          if [ "${#IMAGES[@]}" -eq 0 ]; then
+            echo "No images were downloaded; skipping release upload."
+            exit 0
+          fi
+
+          ASSETS_JSON=$(curl -sSf \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "$API/releases/$RELEASE_ID/assets")
+
+          for img in "${IMAGES[@]}"; do
             FILENAME=$(basename "$img")
-            echo "Uploading $FILENAME to release $RELEASE_ID"
-            curl -s \
-              -H "Authorization: token $GITHUB_TOKEN" \
+            ASSET_ID=$(echo "$ASSETS_JSON" | jq -r --arg name "$FILENAME" '.[] | select(.name == $name) | .id' | head -n1)
+
+            if [ -n "${ASSET_ID:-}" ] && [ "$ASSET_ID" != "null" ]; then
+              curl -sSf -X DELETE \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                "$API/releases/assets/$ASSET_ID"
+            fi
+
+            echo "Uploading $FILENAME"
+            curl -sSf -X POST \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
               -H "Content-Type: application/octet-stream" \
-              -T "$img" \
-              "https://uploads.github.com/repos/$REPO/releases/$RELEASE_ID/assets?name=$FILENAME"
+              --data-binary @"$img" \
+              "$UPLOAD_URL?name=$FILENAME"
           done
 
       - name: Clean up
         if: always()
         run: |
-          rm -rf ./out/ /images/*.img.xz
+          rm -rf ./artifacts
