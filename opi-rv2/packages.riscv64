@@ -61,7 +61,7 @@ mesa-pvr-ddk242
 # BAKERY
 # ======
 
-gnu-netcat
+openbsd-netcat
 bakery
 bakery-gui
 bakery-tui

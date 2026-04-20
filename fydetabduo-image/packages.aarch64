@@ -58,7 +58,7 @@ ap6275p-firmware
 # BAKERY
 # ======
 
-gnu-netcat
+openbsd-netcat
 bakery
 bakery-gui
 bakery-tui
