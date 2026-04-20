@@ -4,7 +4,7 @@ from time import strftime
 img_version = strftime("%Y%m%d")
 edition = "Cinnamon"
 arch = "aarch64"  # aarch64, armv7h, riscv64
-img_name = "edge2-bredos-arm-cinnamon-v" + img_version
+img_name = "edge2-beryllium-arm-cinnamon-v" + img_version
 install_dir = "arch"
 fs = "btrfs"  # ext4 or btrfs
 img_type = "image"  # image (img.xz)
@@ -25,7 +25,7 @@ U_BOOT_IS_SETUP='true'
 #U_BOOT_DEFAULT="l0"
 #U_BOOT_PROMPT="1"
 #U_BOOT_ENTRIES="all"
-#U_BOOT_MENU_LABEL="BredOS"
+#U_BOOT_MENU_LABEL="Beryllium OS"
 U_BOOT_PARAMETERS="{cmdline}"
 #U_BOOT_ROOT=""
 #U_BOOT_TIMEOUT="50"
@@ -61,9 +61,9 @@ perms = {
     "/usr/bin": ["0", "0", "755"],
     "/usr/share": ["0", "0", "755"],
     "/usr": ["0", "0", "755"],
-    "/home/bred/.config/autostart/org.bredos.bakery.desktop": ["1001", "1001", "755"],
-    "/home/bred/Desktop/org.bredos.bakery.desktop": ["1001", "1001", "755"],
-    "/home/bred/": ["1001", "1001", "750"],
+    "/home/beryl/.config/autostart/org.beryllium.bakery.desktop": ["1001", "1001", "755"],
+    "/home/beryl/Desktop/org.beryllium.bakery.desktop": ["1001", "1001", "755"],
+    "/home/beryl/": ["1001", "1001", "750"],
     "/home": ["0", "0", "755"],
 }
 
@@ -110,13 +110,13 @@ else:
             config_dir + "/xze",
             cfg["out_dir"] + "/" + cfg["img_name"] + ".img.xz",
             "--meta",
-            "label=BredOS",
-            "builder=BredOS",
+            "label=Beryllium OS",
+            "builder=Beryllium OS",
             "date=" + time.ctime().replace("  ", " "),
             "match=BOARD=Edge2",
-            "link=https://bredos.org/",
+            "link=https://beryllium.org/",
             "duration=250",
-            "desc=Edge2 BredOS "
+            "desc=Edge2 Beryllium OS "
             + cfg["edition"]
             + " edition v"
             + cfg["img_version"],

@@ -34,18 +34,18 @@ linux-firmware-whence
 lsb-release
 xf86-video-fbdev
 xorg-server
-bred-os-release
+beryllium-os-release
 parted
 gvfs
 pipewire-pulse
 #pipewire-media-session
 pipewire-alsa
 pipewire-jack
-bredos-keyring
-bredos-logo
-bredos-zram-defaults
-bredos-mirrorlist
-bredos-nohang
+beryllium-keyring
+beryllium-logo
+beryllium-zram-defaults
+beryllium-mirrorlist
+beryllium-nohang
 dosfstools
 e2fsprogs
 librewolf-bin
@@ -65,7 +65,7 @@ aic8800-dkms
 # BAKERY
 # ======
 
-gnu-netcat
+openbsd-netcat
 bakery
 bakery-gui
 bakery-tui
@@ -89,13 +89,13 @@ mint-y-icons
 engrampa
 libmd
 libbsd
-bredos-multilib
-bredos-sysreport
-bredos-news
-bredos-govctl
+beryllium-multilib
+beryllium-sysreport
+beryllium-news
+beryllium-govctl
 pacman-contrib
-bredos-sysconfig
-bredos-tools
+beryllium-sysconfig
+beryllium-tools
 u-boot-update
 xdg-utils
 vulkan-panfrost

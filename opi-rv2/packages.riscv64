@@ -31,17 +31,17 @@ linux-firmware-whence
 lsb-release
 xf86-video-fbdev
 xorg-server
-bred-os-release
+beryllium-os-release
 parted
 gvfs
 pipewire-pulse
 #pipewire-media-session
 pipewire-alsa
 pipewire-jack
-bredos-keyring
-bredos-logo
-bredos-zram-defaults
-bredos-mirrorlist
+beryllium-keyring
+beryllium-logo
+beryllium-zram-defaults
+beryllium-mirrorlist
 dosfstools
 e2fsprogs
 firefox
@@ -61,7 +61,7 @@ mesa-pvr-ddk242
 # BAKERY
 # ======
 
-gnu-netcat
+openbsd-netcat
 bakery
 bakery-gui
 bakery-tui
@@ -117,10 +117,10 @@ gnome-passwordsafe
 # gnome-pie
 gnome-shell-extension-appindicator
 
-bredos-sysreport
-bredos-news
-bredos-govctl
+beryllium-sysreport
+beryllium-news
+beryllium-govctl
 pacman-contrib
-bredos-sysconfig
-bredos-tools
+beryllium-sysconfig
+beryllium-tools
 xdg-utils

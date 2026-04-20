@@ -4,7 +4,7 @@ from time import strftime
 img_version = strftime("%Y-%m-%d")
 edition = "Cinnamon"
 arch = "aarch64"  # aarch64, armv7h, riscv64
-img_name = "BredOS-ARM-OPI5-mainline-" + img_version
+img_name = "Beryllium-ARM-OPI5-mainline-" + img_version
 install_dir = "arch"
 fs = "btrfs"  # ext4 or btrfs
 img_type = "image"  # image (img.xz) or rootfs (tar.gz)
@@ -18,7 +18,7 @@ cmdline = "console=ttyFIQ0,1500000n8 console=tty1 console=both rootwait rw init=
 grubcmdl = "console=ttyFIQ0,1500000n8 console=tty1 console=both rootwait rw init=/sbin/init"
 grubdtb = "dtbs/rockchip/rk3588s-orangepi-5.dtb"
 
-configtxt = """label BredOS ARM
+configtxt = """label Beryllium OS ARM
     kernel /vmlinuz-linux-rockchip-rkr3
     initrd /initramfs-linux-rockchip-rkr3.img
     fdt /dtbs/rockchip/rk3588s-orangepi-5.dtb
@@ -53,9 +53,9 @@ perms = {
     "/usr/bin": ["0", "0", "755"],
     "/usr/share": ["0", "0", "755"],
     "/usr": ["0", "0", "755"],
-    "/home/bred/.config/autostart/org.bredos.bakery.desktop": ["1001", "1001", "755"],
-    "/home/bred/Desktop/org.bredos.bakery.desktop": ["1001", "1001", "755"],
-    "/home/bred/": ["1001", "1001", "750"],
+    "/home/beryl/.config/autostart/org.beryllium.bakery.desktop": ["1001", "1001", "755"],
+    "/home/beryl/Desktop/org.beryllium.bakery.desktop": ["1001", "1001", "755"],
+    "/home/beryl/": ["1001", "1001", "750"],
     "/home": ["0", "0", "755"],
 }
 

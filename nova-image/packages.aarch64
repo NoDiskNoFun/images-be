@@ -34,17 +34,17 @@ linux-firmware-whence
 lsb-release
 xf86-video-fbdev
 xorg-server
-bred-os-release
+beryllium-os-release
 parted
 gvfs
 pipewire-pulse
 #pipewire-media-session
 pipewire-alsa
 pipewire-jack
-bredos-keyring
-bredos-logo
-bredos-zram-defaults
-bredos-mirrorlist
+beryllium-keyring
+beryllium-logo
+beryllium-zram-defaults
+beryllium-mirrorlist
 dosfstools
 e2fsprogs
 librewolf-bin
@@ -61,7 +61,7 @@ expect
 # BAKERY
 # ======
 
-gnu-netcat
+openbsd-netcat
 bakery
 bakery-gui
 bakery-tui
@@ -85,15 +85,15 @@ mint-y-icons
 engrampa
 libmd
 libbsd
-bredos-multilib
+beryllium-multilib
 
 grub
 indiedroid-nova-uefi
-bredos-sysreport
-bredos-news
-bredos-govctl
+beryllium-sysreport
+beryllium-news
+beryllium-govctl
 pacman-contrib
-bredos-sysconfig
-bredos-tools
+beryllium-sysconfig
+beryllium-tools
 xdg-utils
 vulkan-panfrost
