@@ -30,17 +30,17 @@ linux-firmware-whence
 lsb-release
 xf86-video-fbdev
 xorg-server
-bred-os-release
+beryllium-os-release
 parted
 gvfs
 pipewire-pulse
 #pipewire-media-session
 pipewire-alsa
 pipewire-jack
-bredos-keyring
-bredos-logo
-bredos-zram-defaults
-bredos-mirrorlist
+beryllium-keyring
+beryllium-logo
+beryllium-zram-defaults
+beryllium-mirrorlist
 dosfstools
 e2fsprogs
 librewolf-bin
@@ -79,8 +79,8 @@ mint-y-icons
 engrampa
 libmd
 libbsd
-bredos-sysreport
-bredos-news
+beryllium-sysreport
+beryllium-news
 pacman-contrib
 
 grub
@@ -111,10 +111,10 @@ orion-o6-post-install
 r8126-dkms
 xorg-xwayland-cix
 
-bredos-nohang
-bredos-news
-bredos-govctl
-bredos-sysreport
-bredos-sysconfig
-bredos-tools
+beryllium-nohang
+beryllium-news
+beryllium-govctl
+beryllium-sysreport
+beryllium-sysconfig
+beryllium-tools
 xterm

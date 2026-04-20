@@ -25,13 +25,13 @@ uboot-tools
 linux-firmware
 linux-firmware-whence
 lsb-release
-bred-os-release
+beryllium-os-release
 parted
 gvfs
-bredos-keyring
-bredos-logo
-bredos-zram-defaults
-bredos-mirrorlist
+beryllium-keyring
+beryllium-logo
+beryllium-zram-defaults
+beryllium-mirrorlist
 dosfstools
 e2fsprogs
 neofetch
@@ -51,9 +51,9 @@ gnu-netcat
 bakery
 bakery-tui
 
-bredos-sysreport
-bredos-news
-bredos-govctl
+beryllium-sysreport
+beryllium-news
+beryllium-govctl
 pacman-contrib
-bredos-sysconfig
-bredos-tools
+beryllium-sysconfig
+beryllium-tools

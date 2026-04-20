@@ -36,17 +36,17 @@ linux-firmware-whence
 lsb-release
 xf86-video-fbdev
 xorg-server
-bred-os-release
+beryllium-os-release
 parted
 gvfs
 pipewire-pulse
 #pipewire-media-session
 pipewire-alsa
 pipewire-jack
-bredos-keyring
-bredos-logo
-bredos-zram-defaults
-bredos-mirrorlist
+beryllium-keyring
+beryllium-logo
+beryllium-zram-defaults
+beryllium-mirrorlist
 dosfstools
 e2fsprogs
 librewolf-bin
@@ -86,14 +86,14 @@ mint-y-icons
 # mintlocale
 engrampa
 noto-fonts-cjk
-bredos-multilib
+beryllium-multilib
 
 grub
 r58-mini-uefi
-bredos-sysreport
-bredos-news
-bredos-govctl
+beryllium-sysreport
+beryllium-news
+beryllium-govctl
 pacman-contrib
-bredos-sysconfig
-bredos-tools
+beryllium-sysconfig
+beryllium-tools
 xterm

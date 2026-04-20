@@ -4,7 +4,7 @@ from time import strftime
 img_version = strftime("%Y%m%d")
 edition = "Gnome"
 arch = "aarch64"  # aarch64, armv7h, riscv64
-img_name = "vim4-bredos-arm-gnome-v" + img_version
+img_name = "vim4-beryllium-arm-gnome-v" + img_version
 install_dir = "arch"
 fs = "btrfs"  # ext4 or btrfs
 img_type = "image"  # image (img.xz) or rootfs (tar.gz)
@@ -17,8 +17,8 @@ boot_set_esp = False
 
 cmdline = "${bootargs} console=ttyS0,921600 no_console_suspend earlycon=aml-uart,0xfe078000 loglevel=3 rootwait rw init=/sbin/init rootflags=subvol=@ rootfstype=btrfs"
 
-configtxt = """menu background /bred.bmp
-label BredOS ARM
+configtxt = """menu background /beryllium.bmp
+label Beryllium ARM
     kernel /vmlinuz-linux-vim4
     initrd /initramfs-linux-vim4.img
     fdtdir /dtbs
@@ -26,7 +26,7 @@ label BredOS ARM
 
 configtxt_suffix = """
 timeout 5
-default BredOS ARM
+default Beryllium ARM
 """
 
 partition_table = lambda img_size, fs: {
@@ -52,9 +52,9 @@ perms = {
     "/usr/bin": ["0", "0", "755"],
     "/usr/share": ["0", "0", "755"],
     "/usr": ["0", "0", "755"],
-    "/home/bred/.config/autostart/org.bredos.bakery.desktop": ["1001", "1001", "755"],
-    "/home/bred/Desktop/org.bredos.bakery.desktop": ["1001", "1001", "755"],
-    "/home/bred/": ["1001", "1001", "750"],
+    "/home/beryl/.config/autostart/org.beryllium.bakery.desktop": ["1001", "1001", "755"],
+    "/home/beryl/Desktop/org.beryllium.bakery.desktop": ["1001", "1001", "755"],
+    "/home/beryl/": ["1001", "1001", "750"],
     "/home": ["0", "0", "755"],
 }
 
@@ -102,13 +102,13 @@ else:
             config_dir + "/xze",
             cfg["out_dir"] + "/" + cfg["img_name"] + ".img.xz",
             "--meta",
-            "label=BredOS",
-            "builder=BredOS",
+            "label=Beryllium",
+            "builder=Beryllium",
             "date=" + time.ctime().replace("  ", " "),
             "match=BOARD=VIM4",
-            "link=https://bredos.org/",
+            "link=https://beryllium.gr/",
             "duration=160",
-            "desc=Vim 4 BredOS "
+            "desc=Vim 4 Beryllium "
             + cfg["edition"]
             + " edition v"
             + cfg["img_version"],

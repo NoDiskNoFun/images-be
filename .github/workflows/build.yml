@@ -19,7 +19,7 @@ jobs:
     if: ${{ inputs.build_riscv == true }}
     runs-on: ubuntu-latest
     container:
-      image: bredos/bredos:latest
+      image: berylliumorg/os:latest
       ports:
         - 80
       options: --privileged --cap-add=MKNOD --device=/dev/loop-control:/dev/loop-control --device=/dev/loop0:/dev/loop0 --cap-add SYS_ADMIN
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout mkimage
         uses: actions/checkout@v4
         with:
-          repository: BredOS/mkimage
+          repository: beryllium-org/mkimage
           path: mkimage
 
       - name: Install dependencies
@@ -82,7 +82,7 @@ jobs:
     if: ${{ inputs.build_arm == true }}
     runs-on: ubuntu-24.04-arm
     container:
-      image: bredos/bredos:latest
+      image: berylliumorg/os:latest
       ports:
         - 80
       options:  --privileged --cap-add=MKNOD --device=/dev/loop-control:/dev/loop-control --device=/dev/loop0:/dev/loop0 --cap-add SYS_ADMIN
@@ -113,7 +113,7 @@ jobs:
       - name: Checkout mkimage
         uses: actions/checkout@v4
         with:
-          repository: BredOS/mkimage
+          repository: beryllium-org/mkimage
           path: mkimage
 
       - name: Change repo mainline
@@ -155,7 +155,7 @@ jobs:
   release:
     if: always()
     needs: [build-arm, build-riscv64]
-    runs-on: [self-hosted, ARM64, BredOS, emag]
+    runs-on: [self-hosted, ARM64, Beryllium, emag]
 
     steps:
       - name: Set current date as tag name

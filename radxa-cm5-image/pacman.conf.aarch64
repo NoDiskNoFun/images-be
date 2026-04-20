@@ -33,11 +33,11 @@ SigLevel = Required DatabaseOptional
 LocalFileSigLevel = Optional
 # RemoteFileSigLevel = Required
 
-[BredOS]
-Include = /etc/pacman.d/bredos-mirrorlist
+[Beryllium]
+Include = /etc/pacman.d/beryllium-mirrorlist
 
-[BredOS-any]
-Include = /etc/pacman.d/bredos-mirrorlist
+[Beryllium-any]
+Include = /etc/pacman.d/beryllium-mirrorlist
 
 [core]
 Server = http://de4.mirror.archlinuxarm.org/$arch/$repo

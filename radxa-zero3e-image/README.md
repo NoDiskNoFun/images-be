@@ -1,9 +1,9 @@
 # indiedroid-nova-image
-## BredOS image building preset for the Indiedroid Nova
+## Beryllium OS image building preset for the Zero 3E
 
-To be used with [https://github.com/BredOS/mkimage](https://github.com/BredOS/mkimage)
+To be used with [https://github.com/beryllium-org/mkimage](https://github.com/beryllium-org/mkimage)
 
 ```
-mkimage.py -w ./work/ -o ./out/ -c ./nova-image/
+mkimage.py -w ./work/ -o ./out/ -c ./radxa-zero3e-image/
 
 ```
