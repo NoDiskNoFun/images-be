@@ -57,10 +57,25 @@ jobs:
 
       - name: Build Image
         run: |
-          sudo umount -R ./work/riscv64/* || true
-          sudo rm -rf /var/lib/pacman/db.lck ./out ./work
-          for i in {1..10}; do
-            sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci && break
+          max_attempts=10
+          attempt=1
+
+          while [ "$attempt" -le "$max_attempts" ]; do
+            echo "Build attempt $attempt/$max_attempts for ${{ matrix.image }}"
+            sudo umount -R ./work/riscv64/* || true
+            sudo rm -rf /var/lib/pacman/db.lck ./out ./work
+
+            if sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci; then
+              break
+            fi
+
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "Build failed after $max_attempts attempts"
+              exit 1
+            fi
+
+            attempt=$((attempt + 1))
+            sleep 5
           done
 
       - name: Upload built image
@@ -112,10 +127,25 @@ jobs:
 
       - name: Build Image
         run: |
-          sudo umount -R ./work/aarch64/* || true
-          sudo rm -rf /var/lib/pacman/db.lck ./out ./work
-          for i in {1..10}; do
-            sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci && break
+          max_attempts=10
+          attempt=1
+
+          while [ "$attempt" -le "$max_attempts" ]; do
+            echo "Build attempt $attempt/$max_attempts for ${{ matrix.image }}"
+            sudo umount -R ./work/aarch64/* || true
+            sudo rm -rf /var/lib/pacman/db.lck ./out ./work
+
+            if sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci; then
+              break
+            fi
+
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "Build failed after $max_attempts attempts"
+              exit 1
+            fi
+
+            attempt=$((attempt + 1))
+            sleep 5
           done
 
       - name: Upload built image
