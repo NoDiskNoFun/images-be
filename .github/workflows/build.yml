@@ -15,13 +15,13 @@ on:
         type: boolean
       arm_mirrors:
         description: 'Arch Linux ARM mirrors'
+        # Use "|" as newline separator, e.g. "Server = ...|Server = ..."
         required: true
-        default: |
-          Server = http://de4.mirror.archlinuxarm.org/$arch/$repo
-          Server = http://de3.mirror.archlinuxarm.org/$arch/$repo
+        default: 'Server = http://de4.mirror.archlinuxarm.org/$arch/$repo|Server = http://de3.mirror.archlinuxarm.org/$arch/$repo'
         type: string
       riscv_mirror:
         description: 'Arch RISC-V mirror'
+        # Use "|" as newline separator, e.g. "Server = ...|Server = ..."
         required: true
         default: 'Server = https://archriscv.felixc.at/repo/$repo'
         type: string
@@ -73,8 +73,9 @@ jobs:
       - name: Force Arch RISC-V mirror
         run: |
           PACMAN_CONF="images/${{ matrix.image }}/pacman.conf.riscv64"
-          awk -v mirror='${{ env.RISCV_MIRROR }}' \
-            '{ if ($0 ~ /^Server = /) print mirror; else print $0 }' \
+          RISCV_MIRRORS="$(printf '%s' '${{ env.RISCV_MIRROR }}' | tr '|' '\n')"
+          awk -v mirrors="$RISCV_MIRRORS" \
+            '{ if ($0 ~ /^Server = /) print mirrors; else print $0 }' \
             "$PACMAN_CONF" > "$PACMAN_CONF.tmp"
           mv "$PACMAN_CONF.tmp" "$PACMAN_CONF"
 
@@ -153,7 +154,8 @@ jobs:
 
       - name: Force Arch Linux ARM mirror
         run: |
-          printf '%s\n' '${{ env.ARM_MIRRORS }}' | sudo tee /etc/pacman.d/mirrorlist > /dev/null
+          ARM_MIRRORS_PARSED="$(printf '%s' '${{ env.ARM_MIRRORS }}' | tr '|' '\n')"
+          printf '%s\n' "$ARM_MIRRORS_PARSED" | sudo tee /etc/pacman.d/mirrorlist > /dev/null
 
       - name: Build Image
         run: |
