@@ -59,7 +59,7 @@ jobs:
         run: |
           sudo umount -R ./work/riscv64/* || true
           sudo rm -rf /var/lib/pacman/db.lck ./out ./work
-          for i in {1..3}; do
+          for i in {1..10}; do
             sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci && break
           done
 
@@ -114,7 +114,7 @@ jobs:
         run: |
           sudo umount -R ./work/aarch64/* || true
           sudo rm -rf /var/lib/pacman/db.lck ./out ./work
-          for i in {1..3}; do
+          for i in {1..10}; do
             sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci && break
           done
 
