@@ -58,7 +58,7 @@ jobs:
 
       - name: Build Image
         run: |
-          max_attempts=25
+          max_attempts=50
           attempt=1
 
           while [ "$attempt" -le "$max_attempts" ]; do
@@ -129,7 +129,7 @@ jobs:
 
       - name: Build Image
         run: |
-          max_attempts=25
+          max_attempts=50
           attempt=1
 
           while [ "$attempt" -le "$max_attempts" ]; do
