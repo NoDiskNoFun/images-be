@@ -160,15 +160,24 @@ jobs:
             exit 1
           fi
 
+          cleanup_build_state() {
+            sudo umount -R ./work/aarch64/* || true
+            sudo rm -rf \
+              /var/lib/pacman/db.lck \
+              /var/lib/pacman/sync/* \
+              /var/cache/pacman/pkg/* \
+              ./out \
+              ./work
+          }
+
           max_attempts=100
           attempt=1
+          cleanup_build_state
 
           while [ "$attempt" -le "$max_attempts" ]; do
             selected_mirror="$(printf '%s\n' "${arm_mirrors[@]}" | shuf -n 1)"
             echo "Build attempt $attempt/$max_attempts for ${{ matrix.image }}"
             echo "Using ARM mirror: $selected_mirror"
-            sudo umount -R ./work/aarch64/* || true
-            sudo rm -rf /var/lib/pacman/db.lck ./out ./work
             printf '%s\n' "$selected_mirror" | sudo tee /etc/pacman.d/mirrorlist > /dev/null
 
             if sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci; then
@@ -180,6 +189,8 @@ jobs:
               exit 1
             fi
 
+            echo "Wiping build files before retrying..."
+            cleanup_build_state
             attempt=$((attempt + 1))
             sleep 20
           done
