@@ -127,7 +127,7 @@ jobs:
 
       - name: Build Image
         run: |
-          max_attempts=10
+          max_attempts=25
           attempt=1
 
           while [ "$attempt" -le "$max_attempts" ]; do
@@ -145,7 +145,7 @@ jobs:
             fi
 
             attempt=$((attempt + 1))
-            sleep 5
+            sleep 20
           done
 
       - name: Upload built image
