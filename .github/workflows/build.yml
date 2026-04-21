@@ -152,20 +152,24 @@ jobs:
             python python-prettytable parted btrfs-progs dosfstools \
             git wget arch-install-scripts unzip gptfdisk xz jq edk2-rk3588-devel which multipath-tools openssh
 
-      - name: Force Arch Linux ARM mirror
-        run: |
-          ARM_MIRRORS_PARSED="$(printf '%s' '${{ env.ARM_MIRRORS }}' | tr '|' '\n')"
-          printf '%s\n' "$ARM_MIRRORS_PARSED" | sudo tee /etc/pacman.d/mirrorlist > /dev/null
-
       - name: Build Image
         run: |
+          mapfile -t arm_mirrors < <(printf '%s' '${{ env.ARM_MIRRORS }}' | tr '|' '\n' | sed '/^[[:space:]]*$/d')
+          if [ "${#arm_mirrors[@]}" -eq 0 ]; then
+            echo "No ARM mirrors configured"
+            exit 1
+          fi
+
           max_attempts=100
           attempt=1
 
           while [ "$attempt" -le "$max_attempts" ]; do
+            selected_mirror="$(printf '%s\n' "${arm_mirrors[@]}" | shuf -n 1)"
             echo "Build attempt $attempt/$max_attempts for ${{ matrix.image }}"
+            echo "Using ARM mirror: $selected_mirror"
             sudo umount -R ./work/aarch64/* || true
             sudo rm -rf /var/lib/pacman/db.lck ./out ./work
+            printf '%s\n' "$selected_mirror" | sudo tee /etc/pacman.d/mirrorlist > /dev/null
 
             if sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci; then
               break
