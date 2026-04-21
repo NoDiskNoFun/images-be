@@ -257,36 +257,15 @@ jobs:
 
       - name: Create or update release and upload images
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           TAG_NAME: ${{ env.TAG_NAME }}
         run: |
           set -euo pipefail
 
-          API="https://api.github.com/repos/$REPO"
-
-          RELEASE_RESPONSE=$(curl -sSf \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "$API/releases/tags/$TAG_NAME" || true)
-
-          RELEASE_ID=$(echo "$RELEASE_RESPONSE" | jq -r '.id // empty')
-          UPLOAD_URL=$(echo "$RELEASE_RESPONSE" | jq -r '.upload_url // empty' | sed 's/{?name,label}//')
-
-          if [ -z "$RELEASE_ID" ]; then
-            CREATE_RESPONSE=$(curl -sSf -X POST \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              -H "Content-Type: application/json" \
-              -d "{\"tag_name\":\"$TAG_NAME\",\"name\":\"$TAG_NAME\",\"draft\":true,\"prerelease\":true}" \
-              "$API/releases")
-
-            RELEASE_ID=$(echo "$CREATE_RESPONSE" | jq -r '.id')
-            UPLOAD_URL=$(echo "$CREATE_RESPONSE" | jq -r '.upload_url' | sed 's/{?name,label}//')
-          fi
-
-          if [ -z "$RELEASE_ID" ] || [ -z "$UPLOAD_URL" ]; then
-            echo "Failed to obtain release information."
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "GitHub CLI (gh) is required but not available."
             exit 1
           fi
 
@@ -297,30 +276,16 @@ jobs:
             exit 0
           fi
 
-          ASSETS_JSON=$(curl -sSf \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "$API/releases/$RELEASE_ID/assets")
+          if ! gh release view "$TAG_NAME" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG_NAME" \
+              --repo "$REPO" \
+              --title "$TAG_NAME" \
+              --notes "" \
+              --draft \
+              --prerelease
+          fi
 
-          for img in "${IMAGES[@]}"; do
-            FILENAME=$(basename "$img")
-            ASSET_ID=$(echo "$ASSETS_JSON" | jq -r --arg name "$FILENAME" '.[] | select(.name == $name) | .id' | head -n1)
-
-            if [ -n "${ASSET_ID:-}" ] && [ "$ASSET_ID" != "null" ]; then
-              curl -sSf -X DELETE \
-                -H "Authorization: Bearer $GITHUB_TOKEN" \
-                -H "Accept: application/vnd.github+json" \
-                "$API/releases/assets/$ASSET_ID"
-            fi
-
-            echo "Uploading $FILENAME"
-            curl -sSf -X POST \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github+json" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary @"$img" \
-              "$UPLOAD_URL?name=$FILENAME"
-          done
+          gh release upload "$TAG_NAME" "${IMAGES[@]}" --clobber --repo "$REPO"
 
       - name: Clean up
         if: always()
