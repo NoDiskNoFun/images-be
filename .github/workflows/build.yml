@@ -13,10 +13,17 @@ on:
         required: true
         default: true
         type: boolean
-      arm_mirror:
-        description: 'Arch Linux ARM mirror'
+      arm_mirrors:
+        description: 'Arch Linux ARM mirrors'
         required: true
-        default: 'Server = http://de3.mirror.archlinuxarm.org/$arch/$repo'
+        default: |
+          Server = http://de4.mirror.archlinuxarm.org/$arch/$repo
+          Server = http://de3.mirror.archlinuxarm.org/$arch/$repo
+        type: string
+      riscv_mirror:
+        description: 'Arch RISC-V mirror'
+        required: true
+        default: 'Server = https://archriscv.felixc.at/repo/$repo'
         type: string
 
 permissions:
@@ -27,6 +34,8 @@ jobs:
   build-riscv64:
     if: ${{ inputs.build_riscv == true }}
     runs-on: ubuntu-latest
+    env:
+      RISCV_MIRROR: ${{ inputs.riscv_mirror }}
     container:
       image: berylliumorg/os:latest
       ports:
@@ -60,6 +69,14 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
+      - name: Force Arch RISC-V mirror
+        run: |
+          PACMAN_CONF="images/${{ matrix.image }}/pacman.conf.riscv64"
+          awk -v mirror='${{ env.RISCV_MIRROR }}' \
+            '{ if ($0 ~ /^Server = /) print mirror; else print $0 }' \
+            "$PACMAN_CONF" > "$PACMAN_CONF.tmp"
+          mv "$PACMAN_CONF.tmp" "$PACMAN_CONF"
 
       - name: Build Image
         run: |
@@ -102,7 +119,7 @@ jobs:
     if: ${{ inputs.build_arm == true }}
     runs-on: ubuntu-24.04-arm
     env:
-      ARM_MIRROR: ${{ inputs.arm_mirror }}
+      ARM_MIRRORS: ${{ inputs.arm_mirrors }}
     container:
       image: berylliumorg/os:latest
       ports:
@@ -136,7 +153,7 @@ jobs:
 
       - name: Force Arch Linux ARM mirror
         run: |
-          printf '%s\n' '${{ env.ARM_MIRROR }}' | sudo tee /etc/pacman.d/mirrorlist > /dev/null
+          printf '%s\n' '${{ env.ARM_MIRRORS }}' | sudo tee /etc/pacman.d/mirrorlist > /dev/null
 
       - name: Build Image
         run: |
