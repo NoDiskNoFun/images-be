@@ -81,7 +81,7 @@ jobs:
 
       - name: Build Image
         run: |
-          max_attempts=100
+          max_attempts=10
           attempt=1
 
           while [ "$attempt" -le "$max_attempts" ]; do
@@ -170,15 +170,35 @@ jobs:
               ./work
           }
 
-          max_attempts=100
+          pacman_conf="images/${{ matrix.image }}/pacman.conf.aarch64"
+          pacman_conf_template="${pacman_conf}.template"
+          if [ ! -f "$pacman_conf" ]; then
+            echo "Missing ARM pacman config: $pacman_conf"
+            exit 1
+          fi
+          cp "$pacman_conf" "$pacman_conf_template"
+
+          apply_arm_mirror() {
+            local mirror="$1"
+            awk -v mirror="$mirror" '
+              /^\[/ { in_archlinuxarm_repo = ($0 == "[core]" || $0 == "[extra]") }
+              in_archlinuxarm_repo && /^Server = / { print mirror; next }
+              { print }
+            ' "$pacman_conf_template" > "${pacman_conf}.tmp"
+            mv "${pacman_conf}.tmp" "$pacman_conf"
+          }
+
+          max_attempts=10
           attempt=1
           cleanup_build_state
 
           while [ "$attempt" -le "$max_attempts" ]; do
-            selected_mirror="$(printf '%s\n' "${arm_mirrors[@]}" | shuf -n 1)"
+            mirror_index=$(( (attempt - 1) % ${#arm_mirrors[@]} ))
+            selected_mirror="${arm_mirrors[$mirror_index]}"
             echo "Build attempt $attempt/$max_attempts for ${{ matrix.image }}"
             echo "Using ARM mirror: $selected_mirror"
             printf '%s\n' "$selected_mirror" | sudo tee /etc/pacman.d/mirrorlist > /dev/null
+            apply_arm_mirror "$selected_mirror"
 
             if sudo python mkimage/mkimage.py -c images/${{ matrix.image }} -w ./work -o ./out --ci; then
               break
