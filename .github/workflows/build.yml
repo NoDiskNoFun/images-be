@@ -14,7 +14,7 @@ on:
         default: true
         type: boolean
       arm_mirror:
-        description: 'Arch Linux ARM pacman mirror entry (Server line)'
+        description: 'Arch Linux ARM mirror'
         required: true
         default: 'Server = http://de3.mirror.archlinuxarm.org/$arch/$repo'
         type: string
