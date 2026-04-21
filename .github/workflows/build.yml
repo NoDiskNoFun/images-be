@@ -13,6 +13,11 @@ on:
         required: true
         default: true
         type: boolean
+      arm_mirror:
+        description: 'Arch Linux ARM pacman mirror entry (Server line)'
+        required: true
+        default: 'Server = http://de3.mirror.archlinuxarm.org/$arch/$repo'
+        type: string
 
 permissions:
   contents: write
@@ -96,6 +101,8 @@ jobs:
   build-arm:
     if: ${{ inputs.build_arm == true }}
     runs-on: ubuntu-24.04-arm
+    env:
+      ARM_MIRROR: ${{ inputs.arm_mirror }}
     container:
       image: berylliumorg/os:latest
       ports:
@@ -126,6 +133,10 @@ jobs:
           sudo pacman -Sy --noconfirm --needed \
             python python-prettytable parted btrfs-progs dosfstools \
             git wget arch-install-scripts unzip gptfdisk xz jq edk2-rk3588-devel which multipath-tools openssh
+
+      - name: Force Arch Linux ARM mirror
+        run: |
+          printf '%s\n' '${{ env.ARM_MIRROR }}' | sudo tee /etc/pacman.d/mirrorlist > /dev/null
 
       - name: Build Image
         run: |
