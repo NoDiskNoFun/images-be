@@ -230,7 +230,7 @@ jobs:
           sudo rm -rf ./work ./out
 
   release:
-    if: ${{ needs.build-arm.result == 'success' || needs.build-riscv64.result == 'success' }}
+    if: ${{ always() && (needs.build-arm.result == 'success' || needs.build-riscv64.result == 'success') }}
     needs: [build-arm, build-riscv64]
     runs-on: [self-hosted, ARM64, Beryllium, emag]
 
@@ -240,6 +240,7 @@ jobs:
         run: echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Download ARM artifacts
+        if: ${{ needs.build-arm.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           pattern: arm64-*
@@ -247,6 +248,7 @@ jobs:
           merge-multiple: true
 
       - name: Download RISC-V artifacts
+        if: ${{ needs.build-riscv64.result == 'success' }}
         uses: actions/download-artifact@v4
         with:
           pattern: riscv64-*
