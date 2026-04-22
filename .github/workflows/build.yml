@@ -31,8 +31,43 @@ permissions:
   actions: read
 
 jobs:
+  prepare-release:
+    if: ${{ inputs.build_arm == true || inputs.build_riscv == true }}
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.tag.outputs.tag_name }}
+
+    steps:
+      - name: Set current date as tag name
+        id: tag
+        run: echo "tag_name=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Create release if it does not exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG_NAME: ${{ steps.tag.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "GitHub CLI (gh) is required but not available."
+            exit 1
+          fi
+
+          if ! gh release view "$TAG_NAME" --repo "$REPO" >/dev/null 2>&1; then
+            gh release create "$TAG_NAME" \
+              --repo "$REPO" \
+              --title "$TAG_NAME" \
+              --notes "" \
+              --draft \
+              --prerelease
+          fi
+
   build-riscv64:
     if: ${{ inputs.build_riscv == true }}
+    needs: [prepare-release]
     runs-on: ubuntu-latest
     env:
       RISCV_MIRROR: ${{ inputs.riscv_mirror }}
@@ -65,7 +100,7 @@ jobs:
           init-docker
           sudo pacman -Sy --noconfirm --needed \
             python python-prettytable parted btrfs-progs dosfstools \
-            git wget arch-install-scripts unzip gptfdisk xz jq which multipath-tools docker openssh
+            git wget arch-install-scripts unzip gptfdisk xz jq which multipath-tools docker openssh github-cli
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -102,13 +137,22 @@ jobs:
             sleep 20
           done
 
-      - name: Upload built image
-        uses: actions/upload-artifact@v4
-        with:
-          name: riscv64-${{ matrix.image }}
-          path: out/*.img.xz
-          if-no-files-found: error
-          retention-days: 14
+      - name: Upload image to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG_NAME: ${{ needs.prepare-release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t IMAGES < <(find ./out -maxdepth 1 -type f -name '*.img.xz' | sort)
+          if [ "${#IMAGES[@]}" -eq 0 ]; then
+            echo "No images were built; nothing to upload."
+            exit 1
+          fi
+
+          gh release upload "$TAG_NAME" "${IMAGES[@]}" --clobber --repo "$REPO"
 
       - name: Cleanup
         if: always()
@@ -118,6 +162,7 @@ jobs:
 
   build-arm:
     if: ${{ inputs.build_arm == true }}
+    needs: [prepare-release]
     runs-on: ubuntu-24.04-arm
     env:
       ARM_MIRRORS: ${{ inputs.arm_mirrors }}
@@ -150,7 +195,7 @@ jobs:
           init-docker
           sudo pacman -Sy --noconfirm --needed \
             python python-prettytable parted btrfs-progs dosfstools \
-            git wget arch-install-scripts unzip gptfdisk xz jq edk2-rk3588-devel which multipath-tools openssh
+            git wget arch-install-scripts unzip gptfdisk xz jq edk2-rk3588-devel which multipath-tools openssh github-cli
 
       - name: Build Image
         run: |
@@ -215,79 +260,25 @@ jobs:
             sleep 20
           done
 
-      - name: Upload built image
-        uses: actions/upload-artifact@v4
-        with:
-          name: arm64-${{ matrix.image }}
-          path: out/*.img.xz
-          if-no-files-found: error
-          retention-days: 14
+      - name: Upload image to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG_NAME: ${{ needs.prepare-release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t IMAGES < <(find ./out -maxdepth 1 -type f -name '*.img.xz' | sort)
+          if [ "${#IMAGES[@]}" -eq 0 ]; then
+            echo "No images were built; nothing to upload."
+            exit 1
+          fi
+
+          gh release upload "$TAG_NAME" "${IMAGES[@]}" --clobber --repo "$REPO"
 
       - name: Cleanup
         if: always()
         run: |
           sudo umount -R ./work/aarch64/* || true
           sudo rm -rf ./work ./out
-
-  release:
-    if: ${{ always() && (needs.build-arm.result == 'success' || needs.build-riscv64.result == 'success') }}
-    needs: [build-arm, build-riscv64]
-    runs-on: ubuntu-24.04-arm
-
-    steps:
-      - name: Set current date as tag name
-        id: set_tag_name
-        run: echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      - name: Download ARM artifacts
-        if: ${{ needs.build-arm.result == 'success' }}
-        uses: actions/download-artifact@v4
-        with:
-          pattern: arm64-*
-          path: ./artifacts/arm64
-          merge-multiple: true
-
-      - name: Download RISC-V artifacts
-        if: ${{ needs.build-riscv64.result == 'success' }}
-        uses: actions/download-artifact@v4
-        with:
-          pattern: riscv64-*
-          path: ./artifacts/riscv64
-          merge-multiple: true
-
-      - name: Create or update release and upload images
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          TAG_NAME: ${{ env.TAG_NAME }}
-        run: |
-          set -euo pipefail
-
-          if ! command -v gh >/dev/null 2>&1; then
-            echo "GitHub CLI (gh) is required but not available."
-            exit 1
-          fi
-
-          mapfile -t IMAGES < <(find ./artifacts -type f -name '*.img.xz' | sort)
-
-          if [ "${#IMAGES[@]}" -eq 0 ]; then
-            echo "No images were downloaded; skipping release upload."
-            exit 0
-          fi
-
-          if ! gh release view "$TAG_NAME" --repo "$REPO" >/dev/null 2>&1; then
-            gh release create "$TAG_NAME" \
-              --repo "$REPO" \
-              --title "$TAG_NAME" \
-              --notes "" \
-              --draft \
-              --prerelease
-          fi
-
-          gh release upload "$TAG_NAME" "${IMAGES[@]}" --clobber --repo "$REPO"
-
-      - name: Clean up
-        if: always()
-        run: |
-          rm -rf ./artifacts
