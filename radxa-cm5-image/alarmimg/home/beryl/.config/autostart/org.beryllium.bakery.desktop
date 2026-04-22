@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Beryllium Installer
-Exec=sudo -E Bakery --gui
+Name=Beryllium OS Installer
+Exec=Bakery --gui
 Icon=org.beryllium.bakery
 Terminal=false
 Type=Application
