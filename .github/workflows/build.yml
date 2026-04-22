@@ -42,12 +42,14 @@ jobs:
         id: tag
         run: echo "tag_name=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
 
-      - name: Create release if it does not exist
+      - name: Create or update release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           TAG_NAME: ${{ steps.tag.outputs.tag_name }}
+          BUILD_ARM: ${{ inputs.build_arm }}
+          BUILD_RISCV: ${{ inputs.build_riscv }}
         run: |
           set -euo pipefail
 
@@ -56,11 +58,28 @@ jobs:
             exit 1
           fi
 
+          if [[ "$BUILD_ARM" == "true" && "$BUILD_RISCV" == "true" ]]; then
+            RELEASE_TITLE="[$TAG_NAME] Beryllium OS Rolling builds"
+          elif [[ "$BUILD_ARM" == "true" ]]; then
+            RELEASE_TITLE="[$TAG_NAME] Beryllium OS Rolling builds (ARM)"
+          else
+            RELEASE_TITLE="[$TAG_NAME] Beryllium OS Rolling builds (RISC-V)"
+          fi
+
+          RELEASE_NOTES=$'These are Beryllium OS automated builds.\nThis release text may be updated later on by one or more of the team members.\n\nThese images may be more conveniently downloaded from https://beryllium.gr/'
+
           if ! gh release view "$TAG_NAME" --repo "$REPO" >/dev/null 2>&1; then
             gh release create "$TAG_NAME" \
               --repo "$REPO" \
-              --title "$TAG_NAME" \
-              --notes "" \
+              --title "$RELEASE_TITLE" \
+              --notes "$RELEASE_NOTES" \
+              --draft \
+              --prerelease
+          else
+            gh release edit "$TAG_NAME" \
+              --repo "$REPO" \
+              --title "$RELEASE_TITLE" \
+              --notes "$RELEASE_NOTES" \
               --draft \
               --prerelease
           fi
@@ -85,12 +104,12 @@ jobs:
 
     steps:
       - name: Checkout Images
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: images
 
       - name: Checkout mkimage
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: beryllium-org/mkimage
           path: mkimage
@@ -180,12 +199,12 @@ jobs:
 
     steps:
       - name: Checkout Images
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: images
 
       - name: Checkout mkimage
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: beryllium-org/mkimage
           path: mkimage
