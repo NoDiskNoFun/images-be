@@ -49,7 +49,7 @@ partition_prefix = lambda config_dir, disk: [
      "mkpart", "opensbi", "1MiB", "2MiB",
      "mkpart", "uboot", "2MiB", "4MiB"
     ],
-    ["dd", "if="+ config_dir + "bootinfo_sd.bin", "of="+ disk, "bs=1", "seek=0", "conv=notrunc"],
+    ["dd", "if="+ config_dir + "bootinfo_sd.bin", "of="+ disk, "bs=512", "seek=0", "conv=notrunc"],
     ["dd", "if="+ config_dir + "FSBL.bin","of="+ disk + "p1", "conv=notrunc"],
     ["dd", "if="+ config_dir + "env.bin", "of="+ disk + "p2", "conv=notrunc"],
     ["dd", "if="+ config_dir + "fw_dynamic.itb", "of="+ disk + "p3", "conv=notrunc"],
