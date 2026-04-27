@@ -35,7 +35,6 @@ beryllium-os-release
 parted
 gvfs
 pipewire-pulse
-#pipewire-media-session
 pipewire-alsa
 pipewire-jack
 beryllium-keyring
@@ -116,6 +115,7 @@ gnome-panel
 gnome-passwordsafe
 # gnome-pie
 gnome-shell-extension-appindicator
+libappindicator
 
 beryllium-sysreport
 beryllium-news
