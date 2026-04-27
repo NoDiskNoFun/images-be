@@ -99,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [opi-rv2, milkv-jupiter-image]
+        image: [opi-rv2, opi-r2s, milkv-jupiter-image]
       max-parallel: 8
 
     steps:
