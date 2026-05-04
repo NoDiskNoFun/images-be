@@ -66,7 +66,7 @@ jobs:
             RELEASE_TITLE="[$TAG_NAME] Beryllium OS Rolling builds (RISC-V)"
           fi
 
-          RELEASE_NOTES=$'These are Beryllium OS automated builds.\nThis release text may be updated later on by one or more of the team members.\n\nThese images may be more conveniently downloaded from https://beryllium.gr/'
+          RELEASE_NOTES=$'These are Beryllium OS automated builds.\n\n### Default Credentials\n\n> ⚠️ These credentials are temporary and will be changed during setup.\n\n- **Setup username:** `beryl`\n- **Setup password:** `beryl`\n- **Root password (until setup completes):** `beryl`\n\n### Downloads\n\nThese images may be more conveniently downloaded from https://beryllium.gr/'
 
           if ! gh release view "$TAG_NAME" --repo "$REPO" >/dev/null 2>&1; then
             gh release create "$TAG_NAME" \

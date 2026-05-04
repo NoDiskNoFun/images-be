@@ -13,7 +13,7 @@ btrfs-progs
 bluez
 bash
 bash-completion
-omb-skel
+beryllium-skel
 sudo
 polkit
 bluez-utils
